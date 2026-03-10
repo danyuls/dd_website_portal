@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JTF Sentinel — Meal Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f5f4f0;
+  color: #1a1a18;
+  min-height: 100vh;
+}
+
+header {
+  background: #1c1f17;
+  color: #f5f4f0;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+header .sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: #8a9070;
+  margin-top: 2px;
+  letter-spacing: 0.1em;
+}
+
+.clock {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  color: #8fb33a;
+  text-align: right;
+}
+
+.main { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+
+.crumb {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: #9a9888;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.crumb .sep { color: #ccc; }
+.crumb .active { color: #1a1a18; font-weight: 500; }
+
+.section-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 6px; }
+.section-hint { font-size: 0.82rem; color: #6a6a60; margin-bottom: 20px; }
+
+.site-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+@media (max-width: 480px) { .site-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.site-btn {
+  background: white;
+  border: 1.5px solid #e0dfd8;
+  border-radius: 8px;
+  padding: 16px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1a1a18;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.site-btn:hover { border-color: #8fb33a; background: #f9fbf4; }
+.site-btn.selected { border-color: #8fb33a; background: #f2f8e6; color: #4a7010; }
+
+.date-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: #9a9888;
+  margin: 20px 0 10px;
+  text-transform: uppercase;
+}
+
+.meal-card {
+  background: white;
+  border: 1.5px solid #e0dfd8;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.meal-card:hover { border-color: #8fb33a; }
+.meal-card.selected { border-color: #8fb33a; background: #f2f8e6; }
+
+.meal-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #c8890a;
+  min-width: 46px;
+  flex-shrink: 0;
+}
+
+.meal-info { flex: 1; }
+.meal-name { font-size: 0.9rem; font-weight: 600; }
+.meal-vendor { font-size: 0.78rem; color: #6a6a60; margin-top: 2px; }
+
+.meal-deadline { text-align: right; flex-shrink: 0; }
+.deadline-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  color: #aaa;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 2px;
+}
+.deadline-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: #c84040;
+  font-weight: 500;
+}
+
+.summary-card {
+  background: white;
+  border: 1.5px solid #e0dfd8;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0efe8;
+}
+.summary-row:last-child { border-bottom: none; }
+
+.sum-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: #aaa;
+  letter-spacing: 0.1em;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+.sum-val { font-size: 0.9rem; font-weight: 600; }
+.sum-val.green { color: #4a7010; }
+.sum-val.amber { color: #c8890a; }
+.sum-val.red { color: #c84040; }
+
+.countdown {
+  background: #fff8f0;
+  border: 1.5px solid #f0d090;
+  border-radius: 8px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.countdown-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: #aaa;
+  letter-spacing: 0.1em;
+}
+.countdown-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #c8890a;
+  margin-top: 4px;
+}
+.countdown-val.red { color: #c84040; }
+.countdown-val.green { color: #4a7010; }
+
+.dd-btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: #ff3008;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 10px;
+}
+.dd-btn:hover { background: #e02800; }
+.dd-btn.disabled { background: #ddd; color: #999; cursor: not-allowed; pointer-events: none; }
+
+.btn-row { display: flex; gap: 10px; margin-top: 6px; }
+
+.btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary { background: #1c1f17; color: white; }
+.btn-primary:hover { background: #2e3420; }
+.btn-primary:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+.btn-ghost { background: transparent; border: 1.5px solid #ddd; color: #666; }
+.btn-ghost:hover { border-color: #999; color: #333; }
+
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>JTF Sentinel — Meal Orders</h1>
+    <div class="sub">NY ARNG · UNCLASSIFIED</div>
+  </div>
+  <div class="clock" id="clock">—</div>
+</header>
+
+<div class="main">
+  <div class="crumb" id="crumb"><span class="active">Select Site</span></div>
+
+  <!-- STEP 1 -->
+  <div id="panel-site">
+    <div class="section-title">Where are you stationed?</div>
+    <div class="section-hint">Select your correctional facility site.</div>
+    <div class="site-grid" id="site-grid"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-meals" disabled onclick="goToMeals()">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="panel-meals" class="hidden">
+    <div class="section-title" id="meals-title">Select Your Meal</div>
+    <div class="section-hint">Choose the meal that applies to your shift and location.</div>
+    <div id="meal-list"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="back(1)">← Back</button>
+      <button class="btn btn-primary" id="btn-summary" disabled onclick="goToSummary()">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="panel-summary" class="hidden">
+    <div class="section-title">Your Order</div>
+    <div class="section-hint">Review the details below, then open DoorDash to place your order.</div>
+
+    <div class="summary-card">
+      <div class="summary-row"><span class="sum-label">SITE</span><span class="sum-val green" id="sum-site">—</span></div>
+      <div class="summary-row"><span class="sum-label">ORDER DATE</span><span class="sum-val amber" id="sum-date">—</span></div>
+      <div class="summary-row"><span class="sum-label">MEAL</span><span class="sum-val" id="sum-meal">—</span></div>
+      <div class="summary-row"><span class="sum-label">VENDOR</span><span class="sum-val" id="sum-vendor">—</span></div>
+      <div class="summary-row"><span class="sum-label">DELIVERY TIME</span><span class="sum-val amber" id="sum-eta">—</span></div>
+      <div class="summary-row"><span class="sum-label">ORDER DEADLINE</span><span class="sum-val red" id="sum-deadline">—</span></div>
+    </div>
+
+    <div class="countdown">
+      <div>
+        <div class="countdown-label">TIME REMAINING TO ORDER</div>
+        <div class="countdown-val" id="countdown">—</div>
+      </div>
+      <div style="font-size:1.4rem">⏱</div>
+    </div>
+
+    <a class="dd-btn" id="dd-btn" href="#" target="_blank">Open DoorDash →</a>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="back(2)">← Change Meal</button>
+      <button class="btn btn-ghost" onclick="back(1)">↩ Change Site</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function ddSearch(v) { return `https://www.doordash.com/search/store/${encodeURIComponent(v)}/`; }
+
+const SITES = {
+  "UTICA C2": { "3/10/2026": [
+    { time:"1230", meal:"ARMORY LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"1130 @ 3/09/2026" },
+    { time:"1730", meal:"HAMPTON INN DINNER", vendor:"Core Life", deadline:"1630 @ 3/09/2026" },
+    { time:"1730", meal:"HOMEWOOD SUITES DINNER", vendor:"Core Life", deadline:"1630 @ 3/09/2026" },
+    { time:"1400", meal:"SWING SHIFT LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"1300 @ 3/09/2026" },
+    { time:"1900", meal:"NIGHT SHIFT LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"1630 @ 3/09/2026" },
+    { time:"2000", meal:"ARMORY DINNER", vendor:"Core Life", deadline:"1930 @ 3/09/2026" },
+  ]},
+  "MARCY": {
+    "3/11/2026": [
+      { time:"0800", meal:"DOUBLE TREE BREAKFAST", vendor:"Knead to Eat", deadline:"2200 @ 3/11/2026" },
+      { time:"1100", meal:"FACILITY LUNCH", vendor:"Brooklyn Pickle", deadline:"0900 @ 3/11/2026" },
+      { time:"1100", meal:"ALT FACILITY LUNCH", vendor:"Pho", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"DOUBLE TREE LUNCH", vendor:"Nadi Ayar", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"HOLIDAY INN UTICA LUNCH", vendor:"Muju", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"TOWNEPLACE LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"HAMPTON INN ROME LUNCH", vendor:"Crust Kitchen & Bar", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"QUALITY INN NEW HARTFORD LUNCH", vendor:"Damianos Market", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"HOME2 SUITES UTICA LUNCH", vendor:"Los Amigos Mexican", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"DELTA HOTEL UTICA LUNCH", vendor:"Brooklyn Pickle", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"HAMPTON INN UTICA", vendor:"Chipotle", deadline:"0900 @ 3/11/2026" },
+      { time:"1300", meal:"FAIRFIELD UTICA", vendor:"Mitsuba Ramen", deadline:"0900 @ 3/11/2026" },
+    ],
+    "3/12/2026": [
+      { time:"0800", meal:"DOUBLE TREE BREAKFAST", vendor:"Kneads to Eat", deadline:"2200 @ 3/12/2026" },
+      { time:"1100", meal:"FACILITY LUNCH", vendor:"Karma Asian Fusion Cuisine", deadline:"0900 @ 3/12/2026" },
+      { time:"1100", meal:"ALT FACILITY LUNCH", vendor:"Brooklyn Pickle", deadline:"0900 @ 3/12/2026" },
+    ]
+  },
+  "MIDSTATE": {
+    "3/10/2026": [
+      { time:"0500", meal:"BREAKFAST", vendor:"Willies Gourmet Cafe", deadline:"2200 @ 3/9/2026" },
+      { time:"1100", meal:"FACILITY LUNCH", vendor:"Las Brasas Maria", deadline:"0900 @ 3/10/2026" },
+      { time:"1500", meal:"FACILITY HALAL LUNCH", vendor:"Smoked Halal", deadline:"0900 @ 3/10/2026" },
+      { time:"1500", meal:"NIGHT SHIFT/PASS LUNCH", vendor:"Las Brasas Maria", deadline:"0900 @ 3/10/2026" },
+      { time:"1500", meal:"NIGHT SHIFT/PASS HALAL LUNCH", vendor:"Smoked Halal", deadline:"0900 @ 3/10/2026" },
+      { time:"1700", meal:"FACILITY DINNER", vendor:"Muju", deadline:"0900 @ 3/10/2026" },
+      { time:"1700", meal:"FACILITY HALAL DINNER", vendor:"One Arabian Night", deadline:"0900 @ 3/10/2026" },
+    ],
+    "3/11/2026": [
+      { time:"0500", meal:"BREAKFAST", vendor:"Willies Gourmet Cafe", deadline:"2200 @ 3/11/2026" },
+      { time:"1100", meal:"FACILITY LUNCH", vendor:"Taichi Bubble Tea", deadline:"0900 @ 3/11/2026" },
+      { time:"1500", meal:"FACILITY HALAL LUNCH", vendor:"315 Dari Del", deadline:"0900 @ 3/11/2026" },
+      { time:"1500", meal:"NIGHT SHIFT/PASS LUNCH", vendor:"TaiChi Bubble Tea", deadline:"0900 @ 3/11/2026" },
+      { time:"1500", meal:"NIGHT SHIFT/PASS HALAL LUNCH", vendor:"315 Dari Del", deadline:"0900 @ 3/11/2026" },
+      { time:"1700", meal:"FACILITY DINNER", vendor:"Mi Casa", deadline:"0900 @ 3/11/2026" },
+      { time:"1700", meal:"FACILITY HALAL DINNER", vendor:"Smoked Halal Food", deadline:"0900 @ 3/11/2026" },
+    ]
+  },
+  "MOHAWK": {
+    "3/10/2026": [
+      { time:"—", meal:"FACILITY LUNCH", vendor:"Teriyaki Bros", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"HAMPTON INN VERONA LUNCH", vendor:"Banda Burrito", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"FAIRFIELD INN ROME LUNCH", vendor:"Cinco de Mayo Mexican", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"COMFORT INN VERONA LUNCH", vendor:"Sherrys Hot Chicken", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"HAMPTON INN VERONA DINNER", vendor:"Guadalajara Mexican", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"FAIRFIELD INN ROME DINNER", vendor:"Guadalajara Mexican", deadline:"0900 @ 3/10/2026" },
+      { time:"—", meal:"COMFORT INN VERONA DINNER", vendor:"Guadalajara Mexican", deadline:"0900 @ 3/10/2026" },
+    ],
+    "3/11/2026": [
+      { time:"—", meal:"FACILITY LUNCH", vendor:"Unico Sabor Latino", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"HAMPTON INN VERONA LUNCH", vendor:"Crust Kitchen & Bar", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"FAIRFIELD INN ROME LUNCH", vendor:"Teriyaki Bros", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"COMFORT INN VERONA LUNCH", vendor:"Mitsuba", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"HAMPTON INN VERONA DINNER", vendor:"KPOT Korean BBQ & Hot Pot", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"FAIRFIELD INN ROME DINNER", vendor:"KPOT Korean BBQ & Hot Pot", deadline:"0900 @ 3/11/2026" },
+      { time:"—", meal:"COMFORT INN VERONA DINNER", vendor:"KPOT Korean BBQ & Hot Pot", deadline:"0900 @ 3/11/2026" },
+    ]
+  },
+  "AUBURN": { "TBD": [
+    { time:"—", meal:"BREAKFAST", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"HALAL LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"DINNER", vendor:"TBD", deadline:"TBD" },
+  ]},
+  "CAYUGA": { "TBD": [
+    { time:"—", meal:"CF BREAKFAST", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF HALAL LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"HOTEL LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF DINNER", vendor:"TBD", deadline:"TBD" },
+  ]},
+  "ELMIRA": { "TBD": [
+    { time:"—", meal:"CF LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"HALAL LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF DINNER", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"HOTEL DINNER", vendor:"TBD", deadline:"TBD" },
+  ]},
+  "FIVE POINTS": { "TBD": [
+    { time:"—", meal:"CF BREAKFAST", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"CF DINNER", vendor:"TBD", deadline:"TBD" },
+  ]},
+  "WASHINGTON": { "TBD": [
+    { time:"—", meal:"BREAKFAST", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"LUNCH", vendor:"TBD", deadline:"TBD" },
+    { time:"—", meal:"DINNER", vendor:"TBD", deadline:"TBD" },
+  ]}
+};
+
+let site = null, meal = null, ticker = null;
+
+setInterval(() => {
+  const n = new Date();
+  const h = String(n.getHours()).padStart(2,'0');
+  const m = String(n.getMinutes()).padStart(2,'0');
+  const d = n.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  document.getElementById('clock').textContent = `${d} · ${h}${m}L`;
+}, 1000);
+
+const grid = document.getElementById('site-grid');
+Object.keys(SITES).forEach(s => {
+  const b = document.createElement('button');
+  b.className = 'site-btn';
+  b.textContent = s;
+  b.onclick = () => {
+    site = s;
+    document.querySelectorAll('.site-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    document.getElementById('btn-meals').disabled = false;
+  };
+  grid.appendChild(b);
+});
+
+function setCrumb(parts) {
+  document.getElementById('crumb').innerHTML = parts.map((p,i) =>
+    i === parts.length-1
+      ? `<span class="active">${p}</span>`
+      : `<span>${p}</span><span class="sep">›</span>`
+  ).join('');
+}
+
+function goToMeals() {
+  show('panel-meals');
+  document.getElementById('meals-title').textContent = `Meals — ${site}`;
+  setCrumb(['Select Site', site, 'Choose Meal']);
+  meal = null;
+  document.getElementById('btn-summary').disabled = true;
+  const container = document.getElementById('meal-list');
+  container.innerHTML = Object.entries(SITES[site]).map(([date, meals]) => `
+    <div class="date-label">📅 ${date}</div>
+    ${meals.map((m, i) => `
+      <div class="meal-card" onclick="selectMeal(this,'${date}',${i})">
+        <div class="meal-time">${m.time}</div>
+        <div class="meal-info">
+          <div class="meal-name">${m.meal}</div>
+          <div class="meal-vendor">${m.vendor}</div>
+        </div>
+        <div class="meal-deadline">
+          <span class="deadline-label">ORDER BY</span>
+          <span class="deadline-val">${m.deadline}</span>
+        </div>
+      </div>`).join('')}
+  `).join('');
+}
+
+function selectMeal(el, date, i) {
+  meal = { date, i };
+  document.querySelectorAll('.meal-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('btn-summary').disabled = false;
+}
+
+function goToSummary() {
+  const m = SITES[site][meal.date][meal.i];
+  show('panel-summary');
+  setCrumb(['Select Site', site, 'Choose Meal', m.meal]);
+  document.getElementById('sum-site').textContent = site;
+  document.getElementById('sum-date').textContent = meal.date;
+  document.getElementById('sum-meal').textContent = m.meal;
+  document.getElementById('sum-vendor').textContent = m.vendor;
+  document.getElementById('sum-eta').textContent = m.time !== '—' ? `${m.time} HRS` : 'See Coordination';
+  document.getElementById('sum-deadline').textContent = m.deadline;
+  const ddBtn = document.getElementById('dd-btn');
+  if (m.vendor === 'TBD') {
+    ddBtn.className = 'dd-btn disabled';
+    ddBtn.textContent = 'DoorDash Link Pending — Contact S4';
+  } else {
+    ddBtn.className = 'dd-btn';
+    ddBtn.href = ddSearch(m.vendor);
+    ddBtn.textContent = `Open DoorDash — ${m.vendor} →`;
+  }
+  startCountdown(m.deadline);
+}
+
+function startCountdown(str) {
+  if (ticker) clearInterval(ticker);
+  const el = document.getElementById('countdown');
+  const match = str.match(/(\d{4})\s*@\s*(\d+)\/(\d+)\/(\d{4})/);
+  if (!match) { el.textContent = 'See deadline above'; return; }
+  const [,time,mo,day,yr] = match;
+  const deadline = new Date(+yr, +mo-1, +day, +time.slice(0,2), +time.slice(2));
+  function tick() {
+    const diff = deadline - new Date();
+    if (diff <= 0) { el.textContent = 'DEADLINE PASSED'; el.className = 'countdown-val red'; clearInterval(ticker); return; }
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    el.textContent = `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+    el.className = diff < 1800000 ? 'countdown-val red' : diff < 7200000 ? 'countdown-val' : 'countdown-val green';
+  }
+  tick(); ticker = setInterval(tick, 1000);
+}
+
+function back(to) {
+  if (ticker) clearInterval(ticker);
+  if (to === 1) { show('panel-site'); setCrumb(['Select Site']); }
+  if (to === 2) { show('panel-meals'); setCrumb(['Select Site', site, 'Choose Meal']); }
+}
+
+function show(id) {
+  ['panel-site','panel-meals','panel-summary'].forEach(p =>
+    document.getElementById(p).classList.toggle('hidden', p !== id)
+  );
+}
+</script>
+</body>
+</html>
