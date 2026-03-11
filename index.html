@@ -292,6 +292,7 @@ function parseCSV(text) {
       meal:     (fields[3] || '').trim().toUpperCase(),
       vendor:   (fields[4] || 'TBD').trim(),
       deadline: (fields[5] || 'TBD').trim(),
+      link:     (fields[6] || '').trim(),
     };
   }).filter(r => r.site && r.meal);
 }
@@ -302,7 +303,7 @@ function groupData(rows) {
   rows.forEach(r => {
     if (!out[r.site]) out[r.site] = {};
     if (!out[r.site][r.date]) out[r.site][r.date] = [];
-    out[r.site][r.date].push({ time: r.time, meal: r.meal, vendor: r.vendor, deadline: r.deadline });
+    out[r.site][r.date].push({ time: r.time, meal: r.meal, vendor: r.vendor, deadline: r.deadline, link: r.link });
   });
   return out;
 }
@@ -426,6 +427,10 @@ function goToSummary() {
     ddBtn.className = 'dd-btn disabled';
     ddBtn.textContent = 'DoorDash Link Pending — Contact S4';
     ddBtn.removeAttribute('href');
+  } else if (m.link) {
+    ddBtn.className = 'dd-btn';
+    ddBtn.href = m.link;
+    ddBtn.textContent = `Open DoorDash — ${m.vendor} →`;
   } else {
     ddBtn.className = 'dd-btn';
     ddBtn.href = `https://www.doordash.com/search/store/${encodeURIComponent(m.vendor)}/`;
@@ -474,22 +479,22 @@ function getDemoData() {
   return {
     "MARCY": {
       "3/11/2026": [
-        { time:"0800", meal:"DOUBLE TREE BREAKFAST", vendor:"Knead to Eat", deadline:"2200 @ 3/11/2026" },
-        { time:"1100", meal:"FACILITY LUNCH", vendor:"Brooklyn Pickle", deadline:"0900 @ 3/11/2026" },
-        { time:"1300", meal:"HAMPTON INN UTICA LUNCH", vendor:"Chipotle", deadline:"0900 @ 3/11/2026" },
+        { time:"0800", meal:"DOUBLE TREE BREAKFAST", vendor:"Knead to Eat", deadline:"2200 @ 3/11/2026", link:"" },
+        { time:"1100", meal:"FACILITY LUNCH", vendor:"Brooklyn Pickle", deadline:"0900 @ 3/11/2026", link:"" },
+        { time:"1300", meal:"HAMPTON INN UTICA LUNCH", vendor:"Chipotle", deadline:"0900 @ 3/11/2026", link:"" },
       ]
     },
     "MIDSTATE": {
       "3/10/2026": [
-        { time:"0500", meal:"BREAKFAST", vendor:"Willies Gourmet Cafe", deadline:"2200 @ 3/9/2026" },
-        { time:"1100", meal:"FACILITY LUNCH", vendor:"Las Brasas Maria", deadline:"0900 @ 3/10/2026" },
-        { time:"1500", meal:"FACILITY HALAL LUNCH", vendor:"Smoked Halal", deadline:"0900 @ 3/10/2026" },
+        { time:"0500", meal:"BREAKFAST", vendor:"Willies Gourmet Cafe", deadline:"2200 @ 3/9/2026", link:"" },
+        { time:"1100", meal:"FACILITY LUNCH", vendor:"Las Brasas Maria", deadline:"0900 @ 3/10/2026", link:"" },
+        { time:"1500", meal:"FACILITY HALAL LUNCH", vendor:"Smoked Halal", deadline:"0900 @ 3/10/2026", link:"" },
       ]
     },
     "UTICA C2": {
       "3/10/2026": [
-        { time:"1230", meal:"ARMORY LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"1130 @ 3/09/2026" },
-        { time:"1730", meal:"HAMPTON INN DINNER", vendor:"Core Life", deadline:"1630 @ 3/09/2026" },
+        { time:"1230", meal:"ARMORY LUNCH", vendor:"Restaurante El Buen Gusto", deadline:"1130 @ 3/09/2026", link:"" },
+        { time:"1730", meal:"HAMPTON INN DINNER", vendor:"Core Life", deadline:"1630 @ 3/09/2026", link:"" },
       ]
     }
   };
