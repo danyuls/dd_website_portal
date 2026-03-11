@@ -241,7 +241,7 @@ header .sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #8a9
 //   4. Click Publish, copy the URL
 //   5. Paste it below replacing the placeholder
 // ─────────────────────────────────────────────────────────────────
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5Kz5MLtq1bgq2igSYqy9ykgoF-IM98ckjxW1qpNPVC53ZC81MNL34IuS5gHY1BbpQohp-ypd6vCY4/pub?gid=1109494372&single=true&output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTET6YnWKHqCv5DZ_81sQWqEjXWpXl3LSCh3rTz6ajwTP81i3rsKnEyDx0GyraSH0cEnHb1kHtysX0x/pub?gid=851798907&single=true&output=csv";
 
 // ─────────────────────────────────────────────────────────────────
 
@@ -272,6 +272,8 @@ function parseCSV(text) {
       else { cur += line[i]; }
     }
     fields.push(cur.trim());
+    // Pad to 7 fields — Google Sheets drops trailing empty columns in CSV export
+    while (fields.length < 7) fields.push('');
     return {
       site:     (fields[0] || '').trim().toUpperCase(),
       date:     (fields[1] || '').trim(),
